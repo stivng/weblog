@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-//go:embed
+//go:embed templates
 var FilesFS embed.FS
 
 var functions = template.FuncMap{
@@ -31,7 +31,12 @@ func (app *Application) RenderTemplate(w http.ResponseWriter, r *http.Request, t
 
 	_, ok := app.TemplatesCache[templName]
 	if !ok || app.Config.Env == "dev" {
+		templ, err = parseTemplate(templName, app.Config.Env)
+		if err != nil {
+			log.Fatalf("Error al parsear la plantilla: %s", err)
+		}
 
+		app.TemplatesCache[templName] = templ
 	} else {
 		templ = app.TemplatesCache[templName]
 	}

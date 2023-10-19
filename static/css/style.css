@@ -1,0 +1,14 @@
+
+
+.text-center{
+   text-align: center;
+}
+
+.error-message {
+   display: inline-block;
+   border: solid;
+   padding: 0 5px;
+   text-align: center;
+   background-color: rgb(206, 4, 4);
+   color: white;
+}
