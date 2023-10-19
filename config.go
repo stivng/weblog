@@ -22,7 +22,8 @@ type Application struct {
 // StartServer inicia el servidor.
 func (app *Application) StartServer() error {
 	srv := &http.Server{
-		Addr: fmt.Sprintf(":%s", app.Config.Port),
+		Addr:    fmt.Sprintf(":%s", app.Config.Port),
+		Handler: app.Routes(),
 	}
 
 	return srv.ListenAndServe()
