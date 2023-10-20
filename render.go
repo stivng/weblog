@@ -22,6 +22,9 @@ func getYear() int {
 }
 
 func addDefaultData(r *http.Request, templateData *TemplateData) *TemplateData {
+	templateData.Url = r.URL.Path
+	templateData.UserSession = getUserSession(r)
+
 	return templateData
 }
 

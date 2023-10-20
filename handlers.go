@@ -4,9 +4,12 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 )
 
 type TemplateData struct {
+	Url         string
+	UserSession string
 }
 
 type User struct {
@@ -16,6 +19,29 @@ type User struct {
 
 type Resp struct {
 	Success bool `json:"success"`
+}
+
+func setUserSession(w http.ResponseWriter, email string) {
+	session := http.Cookie{
+		Name:     "session",
+		Value:    email,
+		Path:     "/",
+		Expires:  time.Now().Add(2 * time.Minute),
+		Secure:   true,
+		HttpOnly: true,
+	}
+
+	http.SetCookie(w, &session)
+}
+
+func getUserSession(r *http.Request) string {
+	session, err := r.Cookie("session")
+	if err != nil {
+		return ""
+	}
+
+	email := session.Value
+	return email
 }
 
 func (app *Application) HomeHandler(w http.ResponseWriter, r *http.Request) {
@@ -36,6 +62,7 @@ func (app *Application) LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 		if user.Email == "majestiic-10@hotmail.com" && user.Password == "12345" {
 			resp.Success = true
+			setUserSession(w, user.Email)
 
 			if err := json.NewEncoder(w).Encode(resp); err != nil {
 				log.Println(err)
@@ -50,6 +77,24 @@ func (app *Application) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (app *Application) BlogHandler(w http.ResponseWriter, r *http.Request) {
+	app.RenderTemplate(w, r, "blog_page.gohtml", nil)
+}
+
 func (app *Application) AboutHandler(w http.ResponseWriter, r *http.Request) {
 	app.RenderTemplate(w, r, "about_page.gohtml", nil)
+}
+
+func (app *Application) LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	session := http.Cookie{
+		Name:   "session",
+		Value:  "",
+		Path:   "/",
+		MaxAge: -1,
+	}
+
+	http.SetCookie(w, &session)
+
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
+	return
 }

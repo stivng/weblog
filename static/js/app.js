@@ -36,13 +36,13 @@ async function dataJSON(email, password) {
       if (data.success) {
          setTimeout(() => {
             window.location.href = '/';
-         }, 2000);
+         }, 1000);
       } else {
          messageErrorHTML('Datos incorrectos');
          
          setTimeout(() => {
             clearHTML();
-         }, 2000);
+         }, 3000);
       };
    } catch (error) {
       console.error("Error");

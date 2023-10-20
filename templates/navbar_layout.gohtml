@@ -1,7 +1,14 @@
 {{define "navbar"}}
    <nav>
-      <a href="/">Inicio</a>
-      <a href="/login">Inicio sesion</a>
-      <a href="/about">Acerca</a>
+      <a href="/" class="{{if eq .Url "/"}}active{{end}}">Inicio</a>
+
+      {{if eq .UserSession ""}}
+         <a href="/login" class="{{if eq .Url "/login"}}active{{end}}">Iniciar sesion</a>
+      {{else}}
+         <a href="/blog" class="{{if eq .Url "/blog"}}active{{end}}">Blog</a>
+         <a href="/logout" class="{{if eq .Url "/logout"}}active{{end}}">Cerrar sesion</a>
+      {{end}}
+
+      <a href="/about" class="{{if eq .Url "/about"}}active{{end}}">Acerca</a>
    </nav>
 {{end}}
