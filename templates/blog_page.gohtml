@@ -4,6 +4,26 @@
    <title>Weblog - Blog</title>
 {{end}}
 {{define "content"}}
-   <h1 class="text-center">Blog</h1>
-   <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Eum recusandae laudantium quod fugit? Molestias cupiditate enim, nam doloremque, aperiam ipsam voluptatem odit ab omnis eligendi unde distinctio! Expedita, et repellendus!</p>
+  <h1>Blogs</h1>
+
+  <table>
+      <thead>
+         <tr>
+            <th>Id</th>
+            <th>Titulo</th>
+            <th>Creacion</th>
+            <th>Actualizacion</th>
+         </tr>
+      </thead>
+      <tbody>
+        {{range .Blogs}}
+            <tr>
+               <td>{{.Id}}</td>
+               <td>{{.Title}}</td>
+               <td>{{.CreatedAt}}</td>
+               <td>{{.UpdateAt}}</td>
+            </tr>
+        {{end}}
+      </tbody>
+  </table>
 {{end}}

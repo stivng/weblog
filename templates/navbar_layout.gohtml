@@ -2,13 +2,17 @@
    <nav>
       <a href="/" class="{{if eq .Url "/"}}active{{end}}">Inicio</a>
 
-      {{if eq .UserSession ""}}
-         <a href="/login" class="{{if eq .Url "/login"}}active{{end}}">Iniciar sesion</a>
-      {{else}}
+      {{if .UserSession}}
          <a href="/blog" class="{{if eq .Url "/blog"}}active{{end}}">Blog</a>
-         <a href="/logout" class="{{if eq .Url "/logout"}}active{{end}}">Cerrar sesion</a>
+      {{else}}
+         <a href="/login" class="{{if eq .Url "/login"}}active{{end}}">Iniciar sesion</a>
+         <a href="/register" class="{{if eq .Url "/register"}}active{{end}}">Regitrarse</a>
       {{end}}
 
       <a href="/about" class="{{if eq .Url "/about"}}active{{end}}">Acerca</a>
+
+      {{if .UserSession}} 
+         <a href="/logout" class="{{if eq .Url "/logout"}}active{{end}}">Cerrar sesion</a>
+      {{end}}
    </nav>
 {{end}}

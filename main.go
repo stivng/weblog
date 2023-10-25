@@ -10,6 +10,8 @@ import (
 	_ "github.com/lib/pq"
 )
 
+var db *sql.DB
+
 func main() {
 	templatesCache := make(map[string]*template.Template)
 
@@ -27,12 +29,14 @@ func main() {
 	}
 
 	// Conexion a la base de datos postgreSQL
-	connValues := "user=alumno dbname=course-db password=123456 host=localhost port=5433 sslmode=disable"
-	db, err := sql.Open("postgres", connValues)
+	var err error
+
+	connStr := "user=alumno dbname=course-db password=123456 host=localhost port=5433 sslmode=disable"
+	db, err = sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatalf("Error conexion BDD: %s", err)
 	}
-	defer db.Close()
+	defer db.Close() // Con este defer toca tener cuidado cuando la conexion se hace en otro paquete que no sea main
 
 	if err = db.Ping(); err != nil {
 		log.Fatal(err)
@@ -41,7 +45,7 @@ func main() {
 	fmt.Println("Conexion exitosa")
 
 	log.Printf("server start in port: %s - mode: %s, version: %s", config.Port, config.Env, config.Version)
-	if err := application.StartServer(); err != nil {
+	if err = application.StartServer(); err != nil {
 		log.Fatalf("Error al iniciar servidor: %s", err)
 	}
 }

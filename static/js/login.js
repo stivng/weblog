@@ -30,7 +30,7 @@ async function dataJSON(email, password) {
 
       if (!response.ok) {
          throw new Error("La solicitud no se pudo completar correctamente.");
-      }
+      };
 
       const data = await response.json();
       if (data.success) {
