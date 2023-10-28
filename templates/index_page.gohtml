@@ -5,5 +5,26 @@
 {{end}}
 {{define "content"}}
    <h1 class="text-center">Bienvenidos a Weblog</h1>
-   <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Molestias ad assumenda blanditiis voluptatibus aliquid dolorem, totam suscipit architecto nesciunt? Amet laboriosam quod dolore numquam quae accusamus! Facere eos a nostrum.</p>
+   
+   <table class="blogs">
+      <caption>Blogs</caption>
+      <thead>
+         <tr>
+            <th>Titulo</th>
+            <th>Contenido</th>
+            <th>Fecha de creacion</th>
+            <th></th>
+         </tr>
+      </thead>
+      <tbody>
+         {{range .Blogs}}
+            <tr>
+               <td>{{.Title}}</td>
+               <td>{{.Content}}</td>
+               <td>{{.CreatedAt | FormatedDate2}}</td>
+               <td><a href="/blog/view?id={{.Id}}">Ver</a></td>
+            </tr>
+         {{end}}
+      </tbody>
+   </table>
 {{end}}

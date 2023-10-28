@@ -1,0 +1,27 @@
+{{template "base" .}}
+
+{{define "title"}}
+   <title>Weblog - Publicaciones</title>
+{{end}}
+{{define "content"}}
+   <h1>Editar blog</h1>
+
+   <div>
+      {{if .Errors}}
+         {{range .Errors}}
+            <p>{{.}}</p>
+         {{end}}
+      {{end}}
+      <form action="/blog/edit?id={{.Blog.Id}}" method="POST">
+         <div>
+            <label for="title">Titulo:</label>
+            <input type="text" name="title" id="title" value="{{.Blog.Title}}">
+         </div>
+         <div>
+            <label for="content">Contenido:</label>
+            <textarea name="content" id="content" cols="30" rows="10">{{.Blog.Content}}</textarea>
+         </div>
+         <button type="submit">Editar</button>
+      </form>
+   </div>
+{{end}}

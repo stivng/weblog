@@ -13,12 +13,26 @@ import (
 var FilesFS embed.FS
 
 var functions = template.FuncMap{
-	"GetYear": getYear,
+	"GetYear":       getYear,
+	"FormatedDate":  FormatedDate,
+	"FormatedDate2": FormatedDate2,
 }
 
 func getYear() int {
 	year := time.Now().Year()
 	return year
+}
+
+func FormatedDate(date time.Time) string {
+	dateStr := date.Format("020106 15:04:05")
+
+	return dateStr
+}
+
+func FormatedDate2(date time.Time) string {
+	dateStr := date.Format("Jan 02")
+
+	return dateStr
 }
 
 func addDefaultData(r *http.Request, templateData *TemplateData) *TemplateData {

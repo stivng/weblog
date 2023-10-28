@@ -3,9 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -15,6 +17,7 @@ type TemplateData struct {
 	UserSession string
 	Errors      []string
 	Blogs       []Blog
+	Blog
 }
 
 type User struct {
@@ -31,7 +34,7 @@ func setUserSession(w http.ResponseWriter, email string) {
 		Name:     "session",
 		Value:    email,
 		Path:     "/",
-		Expires:  time.Now().Add(2 * time.Minute),
+		Expires:  time.Now().Add(12 * time.Minute),
 		Secure:   true,
 		HttpOnly: true,
 	}
@@ -50,7 +53,32 @@ func getUserSession(r *http.Request) string {
 }
 
 func (app *Application) HomeHandler(w http.ResponseWriter, r *http.Request) {
-	app.RenderTemplate(w, r, "index_page.gohtml", nil)
+	blogs, err := GetBlogs()
+	if err != nil {
+		log.Println(err)
+	}
+
+	app.RenderTemplate(w, r, "index_page.gohtml", &TemplateData{
+		Blogs: blogs,
+	})
+}
+
+func (app *Application) HomeBlogViewHandler(w http.ResponseWriter, r *http.Request) {
+	blogId := r.URL.Query().Get("id")
+	id, err := strconv.Atoi(blogId)
+	if err != nil {
+		log.Println(err)
+	}
+
+	blog, err := GetBlogById(id)
+	if err != nil {
+		log.Println(err)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+
+	app.RenderTemplate(w, r, "blog_view_page.gohtml", &TemplateData{
+		Blog: *blog,
+	})
 }
 
 func (app *Application) LoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -130,10 +158,11 @@ func (app *Application) BlogHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(blogs)
+	errorMessage := r.URL.Query().Get("error") // si no encuentra nada retorna vacio, se podria tratar sie s vacio para mostrarle que el usuario fue elmininado correctamente o algo asi
 
 	app.RenderTemplate(w, r, "blog_page.gohtml", &TemplateData{
-		Blogs: blogs,
+		Blogs:  blogs,
+		Errors: []string{errorMessage},
 	})
 }
 
@@ -170,7 +199,7 @@ func (app *Application) NewBlogHandler(w http.ResponseWriter, r *http.Request) {
 
 		blog := Blog{
 			Title:   title,
-			Content: content,
+			Content: template.HTML(content),
 			Slug:    slugify(title),
 			Author:  dataUserDB.Id,
 		}
@@ -190,6 +219,67 @@ func (app *Application) NewBlogHandler(w http.ResponseWriter, r *http.Request) {
 
 		http.Redirect(w, r, "/blog", http.StatusSeeOther)
 	}
+}
+
+func (app *Application) EditBlogHandler(w http.ResponseWriter, r *http.Request) {
+	blogId := r.URL.Query().Get("id")
+	id, err := strconv.Atoi(blogId)
+	if err != nil {
+		return
+	}
+
+	if r.Method == http.MethodGet {
+		blog, err := GetBlogById(id)
+		if err != nil {
+			log.Println("error al extraer blog")
+			return
+		}
+
+		app.RenderTemplate(w, r, "blog_edit.gohtml", &TemplateData{
+			Blog: *blog,
+		})
+	} else if r.Method == http.MethodPost {
+		title := r.FormValue("title")
+		content := r.FormValue("content")
+		// id := r.FormValue("id") tambien funciona para extraer de el id del atributo value de un input hidden. {{.Blog.Id}} que este en el form.
+
+		// Actualizar la base de datos
+		blog := Blog{
+			Id:      id,
+			Title:   title,
+			Content: template.HTML(content),
+			Slug:    slugify(title),
+		}
+
+		if err := UpdateBlog(blog); err != nil {
+			log.Println("error ala actualizar blog")
+			return
+		}
+
+		http.Redirect(w, r, "/blog", http.StatusSeeOther)
+		return
+	}
+}
+
+func (app *Application) DeleteBlogHandler(w http.ResponseWriter, r *http.Request) {
+	blogId := r.URL.Query().Get("id")
+	id, err := strconv.Atoi(blogId)
+	if err != nil {
+		return
+	}
+
+	rows, err := DeleteBlog(id)
+	if err != nil {
+		log.Printf("error al borrar el blog. %s", err)
+		return
+	}
+
+	if rows < 1 {
+		http.Redirect(w, r, fmt.Sprintf("/blog?error=%s", "id no valido"), http.StatusSeeOther)
+		return
+	}
+
+	http.Redirect(w, r, "/blog", http.StatusSeeOther)
 }
 
 func (app *Application) AboutHandler(w http.ResponseWriter, r *http.Request) {

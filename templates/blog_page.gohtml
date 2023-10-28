@@ -6,6 +6,14 @@
 {{define "content"}}
   <h1>Blogs</h1>
 
+  <a href="/blog/new-blog">Nuevo blog</a>
+
+  {{if .Errors}}
+      {{range .Errors}}
+         <p>{{.}}</p>
+      {{end}}
+  {{end}}
+
   <table>
       <thead>
          <tr>
@@ -13,6 +21,7 @@
             <th>Titulo</th>
             <th>Creacion</th>
             <th>Actualizacion</th>
+            <th>Acciones</th>
          </tr>
       </thead>
       <tbody>
@@ -20,8 +29,12 @@
             <tr>
                <td>{{.Id}}</td>
                <td>{{.Title}}</td>
-               <td>{{.CreatedAt}}</td>
-               <td>{{.UpdateAt}}</td>
+               <td>{{.CreatedAt | FormatedDate}}</td>
+               <td>{{.UpdateAt | FormatedDate}}</td>
+               <td>
+                  <a href="/blog/edit?id={{.Id}}" title="edit">[Editar]</a> |
+                  <a href="/blog/delete?id={{.Id}}" title="delete">[Eliminar]</a>
+               </td>
             </tr>
         {{end}}
       </tbody>

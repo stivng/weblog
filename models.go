@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"time"
 )
 
@@ -14,7 +15,7 @@ type DataUserDB struct {
 type Blog struct {
 	Id        int
 	Title     string
-	Content   string
+	Content   template.HTML // Esto se utiliza para poder escribir HTML en el contenido, pero esto es peligroso por que pueden inyectar codigo javascript malicioso. Esto sera tratado como contenido HTML normal.
 	Slug      string
 	Author    int
 	CreatedAt time.Time
@@ -64,9 +65,53 @@ func GetBlogs() ([]Blog, error) {
 		); err != nil {
 			return nil, err
 		}
-
 		blogs = append(blogs, blog)
 	}
 
 	return blogs, nil
+}
+
+func GetBlogById(id int) (*Blog, error) {
+	var blog Blog
+
+	row := db.QueryRow("SELECT id, title, content, slug, user_id, created_at, update_at FROM blogs WHERE id = $1", id)
+
+	if err := row.Scan(&blog.Id, &blog.Title, &blog.Content, &blog.Slug, &blog.Author, &blog.CreatedAt, &blog.UpdateAt); err != nil {
+		return nil, err
+	}
+
+	return &blog, nil
+}
+
+func UpdateBlog(blog Blog) error {
+	_, err := db.Exec(`
+		UPDATE blogs
+		SET title = $1, content = $2, slug = $3, update_at = $4
+		WHERE id = $5
+	`, blog.Title, blog.Content, blog.Slug, blog.UpdateAt, blog.Id)
+	if err != nil {
+		fmt.Printf("error: %s", err)
+		return err
+	}
+
+	return nil
+}
+
+func DeleteBlog(id int) (int64, error) {
+	// Lo ideal seria primero consultar a ver si esta y ahi si borrarlo.
+
+	result, err := db.Exec(`
+		DELETE FROM blogs
+		WHERE id = $1
+	`, id)
+	if err != nil {
+		return 0, err
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+
+	return rows, nil
 }
